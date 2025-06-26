@@ -1,4 +1,4 @@
-name: Deploy to ECS using CodeDeploy
+name: Terraform Deploy Strapi ECS
 
 on:
   push:
@@ -6,49 +6,61 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: shunnualisha8980/strapi-app
   AWS_REGION: us-east-1
+  DOCKER_IMAGE: shunnualisha8980/strapi-app
   ECS_CLUSTER: strapi-cluster
   ECS_SERVICE: strapi-service
   TASK_DEF: strapi-task1
   CODEDEPLOY_APP: strapi-codedeploy
-  CODEDEPLOY_GROUP: automate  # 👈 your environment name
+  CODEDEPLOY_GROUP: automate
 
 jobs:
   deploy:
-    name: Deploy to ECS
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./task8
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./task8
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./task8
 
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Build and push Docker image to Docker Hub
-        working-directory: my-strapi-app
+        working-directory: ./my-strapi-app
         run: |
           docker build -t $DOCKER_IMAGE:${{ github.sha }} .
           docker push $DOCKER_IMAGE:${{ github.sha }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Download current task definition
-        id: task-def
+      - name: Download current ECS task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition $TASK_DEF \
             --query 'taskDefinition' > task-definition.json
 
-      - name: Update task definition with new image
-        id: updated-task
+      - name: Update task definition with new Docker image
         run: |
           IMAGE="$DOCKER_IMAGE:${{ github.sha }}"
           jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' task-definition.json > new-task-def.json
