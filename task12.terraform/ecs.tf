@@ -34,7 +34,7 @@ resource "aws_ecs_cluster" "strapi" {
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "strapi" {
-  family                   = "strapi-task1"
+  family                   = "strapi-task-def"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
