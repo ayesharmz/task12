@@ -35,33 +35,32 @@ resource "aws_ecs_cluster" "strapi" {
 # ECS Task Definition
 resource "aws_ecs_task_definition" "strapi" {
   family                   = "strapi-task1"
-  network_mode            = "awsvpc"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                     = "512"
-  memory                  = "1024"
-  execution_role_arn      = aws_iam_role.ecs_task_execution_role.arn
-  container_definitions   = jsonencode([
-    {
-      name      = "strapi"
-      image     = "shunnualisha8980/strapi-app:latest"
-      essential = true
-      portMappings = [
-        {
-          containerPort = 1337
-          hostPort      = 1337
-        }
-      ]
-      environmentFiles = [
-        {
-          type  = "s3"
-          value = "arn:aws:s3:::strapi786/.env"
-        }
-      ]
-    }
-  ])
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([{
+    name      = "strapi"
+    image     = "shunnualisha8980/strapi-app:latest"
+    essential = true
+    portMappings = [
+      {
+        containerPort = 1337
+        hostPort      = 1337
+      }
+    ]
+    environmentFiles = [
+      {
+        type  = "s3"
+        value = "arn:aws:s3:::strapi786/.env"
+      }
+    ]
+  }])
 }
 
-# ECS Service
+# ECS Service with Load Balancer for CodeDeploy
 resource "aws_ecs_service" "strapi" {
   name            = "strapi-service"
   cluster         = aws_ecs_cluster.strapi.id
@@ -69,13 +68,20 @@ resource "aws_ecs_service" "strapi" {
   desired_count   = 1
   launch_type     = "FARGATE"
 
+  deployment_controller {
+    type = "CODE_DEPLOY"
+  }
+
   network_configuration {
     subnets         = module.vpc.public_subnets
     security_groups = [aws_security_group.ecs_service.id]
     assign_public_ip = true
   }
 
-  deployment_controller {
-    type = "CODE_DEPLOY"
+  # ✅ Required for CODE_DEPLOY deployments
+  load_balancer {
+    target_group_arn = aws_lb_target_group.blue.arn
+    container_name   = "strapi"
+    container_port   = 1337
   }
 }
