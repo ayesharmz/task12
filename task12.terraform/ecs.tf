@@ -79,10 +79,9 @@ resource "aws_ecs_service" "strapi" {
   }
 }
 
-# S3 object for AppSpec file
 resource "aws_s3_object" "appspec" {
   bucket = "strapi786"
   key    = "deploy-strapi.zip"
-  source = "../path/to/deploy-strapi.zip"  # Change this path to your local zip file location
-  etag   = filemd5("../path/to/deploy-strapi.zip")
-}  
+  source = "${path.module}/deploy-strapi.zip"
+  etag   = filemd5("${path.module}/deploy-strapi.zip")
+}
