@@ -2,6 +2,31 @@
 // ecs.tf
 // ----------------------------
 
+# ECS Security Group
+resource "aws_security_group" "ecs_service" {
+  name        = "ecs-service-sg"
+  description = "Allow inbound traffic to ECS service"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 1337
+    to_port     = 1337
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "ecs-service-sg"
+  }
+}
+
 # ECS Cluster
 resource "aws_ecs_cluster" "strapi" {
   name = "strapi-cluster"
