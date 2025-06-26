@@ -6,7 +6,7 @@ provider "aws" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.14.0"
+  version = "5.1.1"
 
   name = "strapi-vpc"
   cidr = "10.0.0.0/16"
@@ -21,12 +21,4 @@ module "vpc" {
   tags = {
     Name = "strapi-vpc"
   }
-}
-
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
-
-output "subnets" {
-  value = module.vpc.private_subnets
 }
