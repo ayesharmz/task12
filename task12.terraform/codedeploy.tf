@@ -18,8 +18,9 @@ resource "aws_iam_role" "codedeploy" {
 
 resource "aws_iam_role_policy_attachment" "codedeploy_policy" {
   role       = aws_iam_role.codedeploy.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForECS"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
 }
+
 
 resource "aws_codedeploy_app" "strapi" {
   name             = "strapi-codedeploy"
