@@ -51,12 +51,6 @@ resource "aws_ecs_task_definition" "strapi" {
         hostPort      = 1337
       }
     ]
-    environmentFiles = [
-      {
-        type  = "s3"
-        value = "arn:aws:s3:::strapi786/.env"
-      }
-    ]
   }])
 }
 
@@ -78,10 +72,17 @@ resource "aws_ecs_service" "strapi" {
     assign_public_ip = true
   }
 
-  # ✅ Required for CODE_DEPLOY deployments
   load_balancer {
     target_group_arn = aws_lb_target_group.blue.arn
     container_name   = "strapi"
     container_port   = 1337
   }
 }
+
+# S3 object for AppSpec file
+resource "aws_s3_object" "appspec" {
+  bucket = "strapi786"
+  key    = "deploy-strapi.zip"
+  source = "../path/to/deploy-strapi.zip"  # Change this path to your local zip file location
+  etag   = filemd5("../path/to/deploy-strapi.zip")
+}  
