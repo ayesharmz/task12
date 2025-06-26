@@ -34,15 +34,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./task8
+        working-directory: ./task12.terraform
 
       - name: Terraform Plan
         run: terraform plan
-        working-directory: ./task8
+        working-directory: ./task12.terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./task8
+        working-directory: ./task12.terraform
 
       - name: Log in to Docker Hub
         run: |
