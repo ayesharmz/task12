@@ -5,12 +5,16 @@ WORKDIR /app
 
 # Copy and install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+COPY yarn.lock ./
+RUN npm install --omit=dev
 
 # Copy application source
 COPY ./src ./src
 COPY ./config ./config
 COPY ./public ./public
+COPY ./admin ./admin
+COPY ./database ./database
+COPY ./index.js ./index.js
 
 # Build admin panel
 RUN npm run build
@@ -20,7 +24,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy built app
+# Copy built app from builder
 COPY --from=builder /app .
 
 # Remove dev dependencies
