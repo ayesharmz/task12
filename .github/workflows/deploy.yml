@@ -46,7 +46,7 @@ jobs:
 
       - name: Log in to Docker Hub
         run: |
-          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build and push Docker image to Docker Hub
         working-directory: ./my-strapi-app
@@ -71,7 +71,7 @@ jobs:
           arn=$(aws ecs register-task-definition \
             --cli-input-json file://new-task-def.json \
             --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "task_definition_arn=$arn" >> $GITHUB_ENV
+          echo "TASK_DEF_ARN=$arn" >> $GITHUB_ENV
 
       - name: Trigger CodeDeploy deployment
         run: |
@@ -80,4 +80,5 @@ jobs:
             --deployment-group-name $CODEDEPLOY_GROUP \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "GitHub Actions deployment" \
-            --task-definition ${{ env.task_definition_arn }}
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
+            --target-application-arns $TASK_DEF_ARN
