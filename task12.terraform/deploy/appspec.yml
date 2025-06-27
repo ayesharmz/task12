@@ -3,8 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "<TASK_DEFINITION>"
+        TaskDefinition: "PLACEHOLDER"
         LoadBalancerInfo:
           ContainerName: "strapi"
           ContainerPort: 1337
-
