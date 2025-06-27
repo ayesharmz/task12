@@ -10,11 +10,10 @@ Resources:
 
 hooks:
   BeforeInstall:
-    - location: ../scripts/beforeInstall.sh
+    - location: scripts/beforeInstall.sh
       timeout: 300
       runas: root
   ApplicationStart:
-    - location: ../scripts/start.sh
+    - location: scripts/start.sh
       timeout: 300
       runas: root
-
