@@ -101,6 +101,7 @@ resource "aws_ecs_service" "strapi" {
 resource "aws_s3_object" "appspec" {
   bucket = "strapi786"
   key    = "deploy-strapi.zip"
-  source = "${path.module}/../deploy-strapi.zip"
-  etag   = filemd5("${path.module}/../deploy-strapi.zip")
+  source = "${path.module}/../zipped/deploy-strapi.zip"
+  etag   = filemd5("${path.module}/../zipped/deploy-strapi.zip")
 }
+
