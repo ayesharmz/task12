@@ -65,11 +65,24 @@ jobs:
           IMAGE="$DOCKER_IMAGE:${{ github.sha }}"
           jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' task-definition.json > new-task-def.json
 
+      - name: Clean up task definition JSON
+        run: |
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .placementConstraints,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          )' new-task-def.json > clean-task-def.json
+
       - name: Register new task definition
         id: register-task
         run: |
           arn=$(aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json \
+            --cli-input-json file://clean-task-def.json \
             --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$arn" >> $GITHUB_ENV
 
