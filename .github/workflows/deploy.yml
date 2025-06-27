@@ -10,7 +10,6 @@ env:
   DOCKER_IMAGE: shunnualisha8980/strapi-app
   ECS_CLUSTER: strapi-cluster
   ECS_SERVICE: strapi-service
-  TASK_DEF: strapi-task1
   CODEDEPLOY_APP: strapi-codedeploy
   CODEDEPLOY_GROUP: automate
 
@@ -37,11 +36,11 @@ jobs:
         working-directory: ./task12.terraform
 
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -var "image_tag=${{ github.sha }}"
         working-directory: ./task12.terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var "image_tag=${{ github.sha }}"
         working-directory: ./task12.terraform
 
       - name: Log in to Docker Hub
@@ -54,37 +53,14 @@ jobs:
           docker build -t $DOCKER_IMAGE:${{ github.sha }} .
           docker push $DOCKER_IMAGE:${{ github.sha }}
 
-      - name: Download current ECS task definition
+      - name: Zip AppSpec and scripts
         run: |
-          aws ecs describe-task-definition \
-            --task-definition $TASK_DEF \
-            --query 'taskDefinition' > task-definition.json
+          mkdir -p zipped
+          zip -r zipped/deploy-strapi.zip appspec.yml scripts/
 
-      - name: Update task definition with new Docker image
+      - name: Upload AppSpec to S3
         run: |
-          IMAGE="$DOCKER_IMAGE:${{ github.sha }}"
-          jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' task-definition.json > new-task-def.json
-
-      - name: Clean up task definition JSON
-        run: |
-          jq 'del(
-            .taskDefinitionArn,
-            .revision,
-            .status,
-            .requiresAttributes,
-            .placementConstraints,
-            .compatibilities,
-            .registeredAt,
-            .registeredBy
-          )' new-task-def.json > clean-task-def.json
-
-      - name: Register new task definition
-        id: register-task
-        run: |
-          arn=$(aws ecs register-task-definition \
-            --cli-input-json file://clean-task-def.json \
-            --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "TASK_DEF_ARN=$arn" >> $GITHUB_ENV
+          aws s3 cp zipped/deploy-strapi.zip s3://strapi786/deploy-strapi.zip
 
       - name: Trigger CodeDeploy deployment
         run: |
@@ -93,5 +69,4 @@ jobs:
             --deployment-group-name $CODEDEPLOY_GROUP \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "GitHub Actions deployment" \
-            --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
-            --target-application-arns $TASK_DEF_ARN
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
