@@ -54,9 +54,10 @@ jobs:
           docker push $DOCKER_IMAGE:${{ github.sha }}
 
       - name: Zip AppSpec and scripts
+        working-directory: ./task12.terraform/deploy
         run: |
-          mkdir -p zipped
-          zip -r zipped/deploy-strapi.zip appspec.yml scripts/
+          mkdir -p ../../zipped
+          zip -r ../../zipped/deploy-strapi.zip appspec.yml scripts/
 
       - name: Upload AppSpec to S3
         run: |
