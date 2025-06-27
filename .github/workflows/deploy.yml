@@ -41,6 +41,9 @@ jobs:
           docker build -t $DOCKER_IMAGE:${{ github.sha }} .
           docker push $DOCKER_IMAGE:${{ github.sha }}
 
+      - name: Make scripts executable
+        run: chmod +x task12.terraform/scripts/*.sh
+
       - name: Zip AppSpec and scripts
         run: |
           mkdir -p zipped
