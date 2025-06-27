@@ -48,8 +48,9 @@ jobs:
           zip -r ../../zipped/deploy-strapi.zip appspec.yml scripts/
 
       - name: Upload AppSpec to S3
+        working-directory: ./task12.terraform
         run: |
-          aws s3 cp zipped/deploy-strapi.zip s3://strapi786/deploy-strapi.zip
+          aws s3 cp ../zipped/deploy-strapi.zip s3://strapi786/deploy-strapi.zip
 
       - name: Terraform Init
         run: terraform init
@@ -70,4 +71,4 @@ jobs:
             --deployment-group-name $CODEDEPLOY_GROUP \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "GitHub Actions deployment" \
-            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+            --s3-location bucket=strapi786,bundleType=zip,key=deploy-strapi.zip
