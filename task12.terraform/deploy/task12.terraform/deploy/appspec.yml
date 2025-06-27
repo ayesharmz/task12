@@ -1,0 +1,19 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "PLACEHOLDER"
+        LoadBalancerInfo:
+          ContainerName: "strapi"
+          ContainerPort: 1337
+
+hooks:
+  BeforeInstall:
+    - location: scripts/beforeInstall.sh
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: scripts/start.sh
+      timeout: 300
+      runas: root
