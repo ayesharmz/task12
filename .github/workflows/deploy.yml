@@ -11,7 +11,7 @@ env:
   ECS_CLUSTER: strapi-cluster
   ECS_SERVICE: strapi-service
   CODEDEPLOY_APP: strapi-codedeploy
-  CODEDEPLOY_GROUP: automate
+  CODEDEPLOY_GROUP: strapi-deployment-group
 
 jobs:
   deploy:
