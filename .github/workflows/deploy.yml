@@ -31,18 +31,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./task12.terraform
-
-      - name: Terraform Plan
-        run: terraform plan -var "image_tag=${{ github.sha }}"
-        working-directory: ./task12.terraform
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var "image_tag=${{ github.sha }}"
-        working-directory: ./task12.terraform
-
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -62,6 +50,18 @@ jobs:
       - name: Upload AppSpec to S3
         run: |
           aws s3 cp zipped/deploy-strapi.zip s3://strapi786/deploy-strapi.zip
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./task12.terraform
+
+      - name: Terraform Plan
+        run: terraform plan -var "image_tag=${{ github.sha }}"
+        working-directory: ./task12.terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var "image_tag=${{ github.sha }}"
+        working-directory: ./task12.terraform
 
       - name: Trigger CodeDeploy deployment
         run: |
